@@ -10,3 +10,4 @@ repos:
     mati/django-ca: {}
     mati/django-xmpp-http-upload: {}
     mati/xmpp-backends: {}
+    mati/repo-maint: {}
