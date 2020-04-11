@@ -178,12 +178,12 @@ for repo in config['repos']:
         ##############
         # travis.yml #
         ##############
-        #check_travis_config(repodir, local_config, reports)
+        check_travis_config(repodir, local_config, reports)
 
         ####################
         # requirements.txt #
         ####################
-        #check_requirements(repodir, local_config, reports)
+        check_requirements(repodir, local_config, reports)
 
         ################
         # pyenv config #
