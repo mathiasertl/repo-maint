@@ -13,18 +13,16 @@
 # You should have received a copy of the GNU General Public License along with repo-maint.  If not,
 # see <http://www.gnu.org/licenses/>.
 
-import glob
 import os
 import subprocess
-import sys
-from contextlib import contextmanager
 
 import yaml
-from pip_upgrader.packages_detector import PackagesDetector
-from pip_upgrader.packages_status_detector import PackagesStatusDetector
-from pip_upgrader.packages_upgrader import PackagesUpgrader
-from pip_upgrader.requirements_detector import RequirementsDetector
 from termcolor import colored
+
+from repo_maint.requirements import check_requirements
+from repo_maint.utils import chdir
+from repo_maint.utils import green
+from repo_maint.utils import red
 
 _binpath = os.path.normpath(os.path.realpath(__file__))
 _bindir = os.path.dirname(_binpath)
@@ -32,36 +30,6 @@ _gitbase = os.path.expanduser('~/git/')
 
 with open(os.path.join(_bindir, 'repo-maint.yaml')) as stream:
     config = yaml.load(stream, Loader=yaml.SafeLoader)
-
-
-@contextmanager
-def chdir(path):
-    orig = os.getcwd()
-    try:
-        os.chdir(path)
-        yield
-    finally:
-        os.chdir(orig)
-
-
-@contextmanager
-def hide_output():
-    try:
-        with open(os.devnull, 'w') as stream:
-            sys.stdout = stream
-            sys.stderr = stream
-            yield
-    finally:
-        sys.stdout = sys.__stdout__
-        sys.stderr = sys.__stderr__
-
-
-def red(msg, **kwargs):
-    return colored(msg, 'red', **kwargs)
-
-
-def green(msg, **kwargs):
-    return colored(msg, 'green', **kwargs)
 
 
 def check_travis_config(repodir, local_config, reports):
@@ -83,28 +51,6 @@ def check_travis_config(repodir, local_config, reports):
                 os.path.basename(travis_config_path), got, want))
 
     return travis_config
-
-
-def check_requirements(repodir, local_config, reports):
-    options = {'-p': ['all']}
-    filenames = RequirementsDetector([]).get_filenames()
-    filenames += list([f for f in local_config['requirements']['files'] if f not in filenames])
-    filenames += glob.glob('requirements-*.txt')
-
-    packages = PackagesDetector(filenames).get_packages()
-    with hide_output():  # this outputs a lot to stdout :-(
-        packages_status_map = PackagesStatusDetector(
-            packages, use_default_index=True).detect_available_upgrades(options)
-
-    selected_packages = {k: v for k, v in packages_status_map.items()
-                         if v['upgrade_available'] and k not in local_config['requirements']['ignore']}
-
-    options = {'--dry-run': False, '--skip-package-installation': True}
-    with hide_output():  # this outputs a lot to stdout :-(
-        upgraded_packages = PackagesUpgrader(selected_packages.values(), filenames, options).do_upgrade()
-
-    reports += ['requirements: {name}: {current_version} -> {latest_version}'.format(**pkg)
-                for pkg in upgraded_packages]
 
 
 def check_pyenv(repodir, local_config, reports):
