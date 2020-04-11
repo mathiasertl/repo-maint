@@ -21,6 +21,7 @@ import yaml
 from termcolor import colored
 
 from repo_maint.requirements import check_requirements
+from repo_maint.travis import check_travis_config
 from repo_maint.utils import chdir
 from repo_maint.utils import green
 from repo_maint.utils import red
@@ -33,30 +34,9 @@ with open(os.path.join(_bindir, 'repo-maint.yaml')) as stream:
     config = yaml.load(stream, Loader=yaml.SafeLoader)
 
 parser = argparse.ArgumentParser(description="Make maintaining multiple repos at once easier.")
-parser.add_argument('--skip-module', action='append', default=[], metavar='MOD',
+parser.add_argument('--skip-module', action='append', default=[], metavar='MOD', dest='skip_modules',
                     help="Skip specific module check.")
 args = parser.parse_args()
-
-
-def check_travis_config(repodir, local_config, reports):
-    travis_config_path = os.path.join(repodir, '.travis.yml')
-    if not os.path.exists(travis_config_path):
-        return
-
-    with open(travis_config_path) as stream:
-        travis_config = yaml.load(stream, Loader=yaml.SafeLoader)
-
-    if travis_config.get('language') == 'python':
-        got = list(sorted(travis_config.get('python')))
-        want = list(config['travis']['python']['versions'])
-        if local_config['travis']['python']['nightly']:
-            want.append('nightly')
-
-        if got != want:
-            reports.append('%s: python=%s, should be %s' % (
-                os.path.basename(travis_config_path), got, want))
-
-    return travis_config
 
 
 def check_pyenv(repodir, local_config, reports):
@@ -144,7 +124,7 @@ for repo in config['repos']:
         # travis.yml #
         ##############
         if 'travis' not in args.skip_modules:
-            check_travis_config(repodir, local_config, reports)
+            check_travis_config(config, repodir, local_config, reports)
 
         ####################
         # requirements.txt #

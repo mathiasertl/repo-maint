@@ -43,3 +43,7 @@ requirements:
   ignore:
     - Sphinx
 ```
+
+### travis
+
+warns about outdated python versions in travis
