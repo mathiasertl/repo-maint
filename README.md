@@ -17,3 +17,29 @@ cd repo-maint
 pyenv activate repo-maint
 pip install -r requirements.txt
 ```
+
+# Configuration
+
+### requirements
+
+Updates `requirements.txt` files using [pip-upgrader](https://github.com/simion/pip-upgrader). It will
+automatically find:
+
+* `requirements.txt`
+* Files inside `requirements/`
+* all files matching `requirements-*.txt` 
+* included files
+
+Possible configuration in `.repo-maint.yaml`:
+
+```
+requirements:
+  # Completely ignore this check:
+  #skip: true
+  # Additional files to include:
+  files:
+    - some/subdir/custom-file-with-reqs.txt
+  # Ignore some packages (case insensitive!)
+  ignore:
+    - Sphinx
+```

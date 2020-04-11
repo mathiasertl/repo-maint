@@ -33,6 +33,8 @@ with open(os.path.join(_bindir, 'repo-maint.yaml')) as stream:
     config = yaml.load(stream, Loader=yaml.SafeLoader)
 
 parser = argparse.ArgumentParser(description="Make maintaining multiple repos at once easier.")
+parser.add_argument('--skip-module', action='append', default=[], metavar='MOD',
+                    help="Skip specific module check.")
 args = parser.parse_args()
 
 
@@ -141,17 +143,20 @@ for repo in config['repos']:
         ##############
         # travis.yml #
         ##############
-        check_travis_config(repodir, local_config, reports)
+        if 'travis' not in args.skip_modules:
+            check_travis_config(repodir, local_config, reports)
 
         ####################
         # requirements.txt #
         ####################
-        check_requirements(repodir, local_config, reports)
+        if 'requirements' not in args.skip_modules:
+            check_requirements(repodir, local_config, reports)
 
         ################
         # pyenv config #
         ################
-        check_pyenv(repodir, local_config, reports)
+        if 'pyenv' not in args.skip_modules:
+            check_pyenv(repodir, local_config, reports)
 
     # print reports for this repo
     if reports:

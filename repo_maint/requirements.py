@@ -21,10 +21,14 @@ from pip_upgrader.requirements_detector import RequirementsDetector
 from .utils import hide_output
 
 
-def check_requirements(repodir, local_config, reports):
+def check_requirements(repodir, config, reports):
+    config = config.get('requirements', {})
+    if config.get('skip'):
+        return
+
     options = {'-p': ['all']}
     filenames = RequirementsDetector([]).get_filenames()
-    filenames += list([f for f in local_config['requirements']['files'] if f not in filenames])
+    filenames += list([f for f in config['files'] if f not in filenames])
     filenames += glob.glob('requirements-*.txt')
 
     packages = PackagesDetector(filenames).get_packages()
@@ -32,8 +36,9 @@ def check_requirements(repodir, local_config, reports):
         packages_status_map = PackagesStatusDetector(
             packages, use_default_index=True).detect_available_upgrades(options)
 
+    ignores = [i.lower() for i in config.get('ignore', [])]
     selected_packages = {k: v for k, v in packages_status_map.items()
-                         if v['upgrade_available'] and k not in local_config['requirements']['ignore']}
+                         if v['upgrade_available'] and k.lower() not in ignores}
 
     options = {'--dry-run': False, '--skip-package-installation': True}
     with hide_output():  # this outputs a lot to stdout :-(
