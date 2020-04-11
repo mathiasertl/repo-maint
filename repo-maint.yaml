@@ -16,5 +16,10 @@ repos:
     jabber-at/hp: {}
     mati/django-ca: {}
     mati/django-xmpp-http-upload: {}
+    mati/django-xmpp-server-list: {}
     mati/xmpp-backends: {}
     mati/repo-maint: {}
+    ttt/nerve-software-center: {}
+    ttt/nerve-factory: {}
+    ttt/nerve-mkimage: {}
+    ttt/nerve-led-controller: {}
