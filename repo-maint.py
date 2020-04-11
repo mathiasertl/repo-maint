@@ -13,6 +13,7 @@
 # You should have received a copy of the GNU General Public License along with repo-maint.  If not,
 # see <http://www.gnu.org/licenses/>.
 
+import argparse
 import os
 import subprocess
 
@@ -30,6 +31,9 @@ _gitbase = os.path.expanduser('~/git/')
 
 with open(os.path.join(_bindir, 'repo-maint.yaml')) as stream:
     config = yaml.load(stream, Loader=yaml.SafeLoader)
+
+parser = argparse.ArgumentParser(description="Make maintaining multiple repos at once easier.")
+args = parser.parse_args()
 
 
 def check_travis_config(repodir, local_config, reports):
