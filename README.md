@@ -46,4 +46,13 @@ requirements:
 
 ### travis
 
-warns about outdated python versions in travis
+Warns about outdated python versions in travis
+
+Possible configuration in `.repo-maint.yaml`:
+
+```
+travis:
+  python:
+    # disable "nightly" as a travis version
+    nightly: false
+```
