@@ -40,15 +40,27 @@ parser.add_argument('--list-modules', action='store_true', default=False,
                     help="List available modules and exit.")
 parser.add_argument('--skip-module', action='append', default=[], metavar='MOD', dest='skip_modules',
                     help="Skip specific module check (use --list-modules to list available modules).")
+parser.add_argument('-l', '--list-repos', action='store_true', default=False,
+                    help="List all tested repositories and exit.")
+parser.add_argument('repositories', nargs='*',
+                    help="Only test listed repositories. If none given, check them all.")
 args = parser.parse_args()
 
 if args.list_modules:
     for module in modules:
         print(module)
     sys.exit()
+if args.list_repos:
+    for repo in config['repos']:
+        print(repo)
+    sys.exit()
 
 
-for repo in config['repos']:
+repos = config['repos']
+if args.repositories:
+    repos = args.repositories
+
+for repo in repos:
     repodir = os.path.join(_gitbase, repo)
 
     if not os.path.exists(repodir):
