@@ -31,12 +31,16 @@ def check_pyenv(config, repodir, local_config, reports):
     if local_config['pyenv']['dev'] is True:
         expected.append(config['pyenv']['dev-version'])
 
+    basename = os.path.basename(repodir)
+    venv_name = '%s/envs/%s' % (expected[0], basename)  # this is
+
+    # Add <newest-python>/envs/<dirname> on top of .python-versions, if requested
+    if local_config['pyenv'].get('virtualenv') is True:
+        expected.insert(0, venv_name)
+
     if versions != expected:
         subprocess.run(['pyenv', 'local'] + expected, **sp_kwargs)
         reports.append('pyenv versions updated to %s' % ', '.join(expected))
-
-    basename = os.path.basename(repodir)
-    venv_name = '%s/envs/%s' % (expected[0], basename)
 
     # get list of available venvs
     all_venvs = subprocess.run(['pyenv', 'versions', '--bare', '--skip-aliases'], **sp_kwargs).stdout.split()

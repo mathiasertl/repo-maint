@@ -76,4 +76,7 @@ pyenv:
   
   # Also add the current in-development Python version
   #dev: true
+
+  # Add <newest-python>/envs/<dirname> on top of .python-versions
+  #virtualenv: true
 ```
