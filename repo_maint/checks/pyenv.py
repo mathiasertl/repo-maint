@@ -22,23 +22,24 @@ from .base import Check
 class PyenvCheck(Check):
     def check_repo(self, repodir, local_config, reports):
         pyenv_config_path = os.path.join(repodir, '.python-version')
-        if not os.path.exists(pyenv_config_path) or local_config['pyenv'].get('skip', False):
+        config = local_config.get('pyenv', {})
+        if not os.path.exists(pyenv_config_path) or config.get('skip', False):
             return
 
         sp_kwargs = {'capture_output': True, 'check': True, 'encoding': 'utf-8'}  # reused a few times
         versions = subprocess.run(['pyenv', 'local'], **sp_kwargs).stdout.split()
 
         expected = sorted(self.config['pyenv']['versions'], reverse=True)
-        if local_config['pyenv']['latest-versions']:
-            expected = expected[:local_config['pyenv']['latest-versions']]
-        if local_config['pyenv']['dev'] is True:
+        if config.get('latest-versions'):
+            expected = expected[:config['latest-versions']]
+        if config.get('dev') is True:
             expected.append(self.config['pyenv']['dev-version'])
 
         basename = os.path.basename(repodir)
         venv_name = '%s/envs/%s' % (expected[0], basename)  # this is
 
         # Add <newest-python>/envs/<dirname> on top of .python-versions, if requested
-        if local_config['pyenv'].get('virtualenv') is True:
+        if config.get('virtualenv') is True:
             expected.insert(0, venv_name)
 
         if versions != expected:
@@ -65,7 +66,7 @@ class PyenvCheck(Check):
             subprocess.run(['pyenv', 'exec', 'pip', 'install', '-U', 'pip', 'setuptools', 'wheel'],
                            env=pyenv_env, **sp_kwargs)
 
-            reqs = [('-r', r) for r in local_config['pyenv']['requirements']]
+            reqs = [('-r', r) for r in config.get('requirements', [])]
             if reqs:
                 reqs = [item for sublist in reqs for item in sublist]
                 subprocess.run(['pyenv', 'exec', 'pip', 'install'] + reqs, env=pyenv_env, **sp_kwargs)

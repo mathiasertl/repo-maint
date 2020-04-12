@@ -30,7 +30,7 @@ class RequirementsCheck(Check):
 
         options = {'-p': ['all']}
         filenames = RequirementsDetector([]).get_filenames()
-        filenames += list([f for f in config['files'] if f not in filenames])
+        filenames += list([f for f in config.get('files', []) if f not in filenames])
         filenames += glob.glob('requirements-*.txt')
         filenames = [f for f in filenames if f not in config.get('ignore_files', [])]
 

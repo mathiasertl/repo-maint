@@ -23,6 +23,7 @@ class TravisCheck(Check):
         travis_config_path = os.path.join(repodir, '.travis.yml')
         if not os.path.exists(travis_config_path):
             return
+        config = local_config.get('travis', {})
 
         with open(travis_config_path) as stream:
             travis_config = yaml.load(stream, Loader=yaml.SafeLoader)
@@ -30,7 +31,7 @@ class TravisCheck(Check):
         if travis_config.get('language') == 'python':
             got = list(sorted(travis_config.get('python')))
             want = list(self.config['travis']['python']['versions'])
-            if local_config['travis']['python']['nightly']:
+            if config.get('python', {}).get('nightly', True):
                 want.append('nightly')
 
             if got != want:

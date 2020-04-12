@@ -83,16 +83,6 @@ for repo in repos:
             local_config = yaml.load(stream, Loader=yaml.SafeLoader)
 
     # set a few defaults in the config so its easier to handle
-    local_config.setdefault('travis', {})
-    local_config['travis'].setdefault('python', {})
-    local_config['travis']['python'].setdefault('nightly', True)
-    local_config.setdefault('requirements', {})
-    local_config['requirements'].setdefault('files', [])
-    local_config['requirements'].setdefault('ignore', {})
-    local_config.setdefault('pyenv', {})
-    local_config['pyenv'].setdefault('dev', False)
-    local_config['pyenv'].setdefault('latest-versions', False)
-    local_config['pyenv'].setdefault('requirements', [])
     print('%s... ' % colored(repodir, attrs=['bold']), end='', flush=True)
 
     with chdir(repodir):
