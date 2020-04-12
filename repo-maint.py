@@ -15,6 +15,7 @@
 
 import argparse
 import os
+import sys
 
 import yaml
 from termcolor import colored
@@ -33,10 +34,18 @@ _gitbase = os.path.expanduser('~/git/')
 with open(os.path.join(_bindir, 'repo-maint.yaml')) as stream:
     config = yaml.load(stream, Loader=yaml.SafeLoader)
 
+modules = ['pyenv', 'travis', 'requirements']
 parser = argparse.ArgumentParser(description="Make maintaining multiple repos at once easier.")
+parser.add_argument('--list-modules', action='store_true', default=False,
+                    help="List available modules and exit.")
 parser.add_argument('--skip-module', action='append', default=[], metavar='MOD', dest='skip_modules',
-                    help="Skip specific module check.")
+                    help="Skip specific module check (use --list-modules to list available modules).")
 args = parser.parse_args()
+
+if args.list_modules:
+    for module in modules:
+        print(module)
+    sys.exit()
 
 
 for repo in config['repos']:
