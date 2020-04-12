@@ -20,10 +20,9 @@ import sys
 import yaml
 from termcolor import colored
 
-from repo_maint.pyenv import check_pyenv
-from repo_maint.requirements import check_requirements
-from repo_maint.travis import check_travis_config
 from repo_maint.utils import chdir
+from repo_maint.utils import get_check_modules
+from repo_maint.utils import get_checks
 from repo_maint.utils import green
 from repo_maint.utils import red
 
@@ -34,7 +33,6 @@ _gitbase = os.path.expanduser('~/git/')
 with open(os.path.join(_bindir, 'repo-maint.yaml')) as stream:
     config = yaml.load(stream, Loader=yaml.SafeLoader)
 
-modules = ['pyenv', 'travis', 'requirements']
 parser = argparse.ArgumentParser(description="Make maintaining multiple repos at once easier.")
 parser.add_argument('--list-modules', action='store_true', default=False,
                     help="List available modules and exit.")
@@ -46,15 +44,19 @@ parser.add_argument('repositories', nargs='*',
                     help="Only test listed repositories. If none given, check them all.")
 args = parser.parse_args()
 
+modules = list(get_check_modules())
+
 if args.list_modules:
     for module in modules:
-        print(module)
+        print(module.__name__.rsplit('.', 1)[1])
     sys.exit()
 if args.list_repos:
     for repo in config['repos']:
         print(repo)
     sys.exit()
 
+
+modules = [m for m in modules if m.__name__.rsplit('.', 1)[1] not in args.skip_modules]
 
 repos = config['repos']
 if args.repositories:
@@ -94,23 +96,10 @@ for repo in repos:
     print('%s... ' % colored(repodir, attrs=['bold']), end='', flush=True)
 
     with chdir(repodir):
-        ##############
-        # travis.yml #
-        ##############
-        if 'travis' not in args.skip_modules:
-            check_travis_config(config, repodir, local_config, reports)
-
-        ####################
-        # requirements.txt #
-        ####################
-        if 'requirements' not in args.skip_modules:
-            check_requirements(repodir, local_config, reports)
-
-        ################
-        # pyenv config #
-        ################
-        if 'pyenv' not in args.skip_modules:
-            check_pyenv(config, repodir, local_config, reports)
+        for module in modules:
+            for check_cls in get_checks(module):
+                check = check_cls(config)
+                check.check_repo(repodir, local_config, reports)
 
     # print reports for this repo
     if reports:
