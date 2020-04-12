@@ -15,11 +15,11 @@
 
 import argparse
 import os
-import subprocess
 
 import yaml
 from termcolor import colored
 
+from repo_maint.pyenv import check_pyenv
 from repo_maint.requirements import check_requirements
 from repo_maint.travis import check_travis_config
 from repo_maint.utils import chdir
@@ -37,53 +37,6 @@ parser = argparse.ArgumentParser(description="Make maintaining multiple repos at
 parser.add_argument('--skip-module', action='append', default=[], metavar='MOD', dest='skip_modules',
                     help="Skip specific module check.")
 args = parser.parse_args()
-
-
-def check_pyenv(repodir, local_config, reports):
-    pyenv_config_path = os.path.join(repodir, '.python-version')
-    if not os.path.exists(pyenv_config_path):
-        return
-
-    sp_kwargs = {'capture_output': True, 'check': True, 'encoding': 'utf-8'}  # reused a few times
-    versions = subprocess.run(['pyenv', 'local'], **sp_kwargs).stdout.split()
-
-    expected = sorted(config['pyenv']['versions'], reverse=True)
-    if local_config['pyenv']['latest-versions']:
-        expected = expected[:local_config['pyenv']['latest-versions']]
-    if local_config['pyenv']['dev'] is True:
-        expected.append(config['pyenv']['dev-version'])
-
-    if versions != expected:
-        subprocess.run(['pyenv', 'local'] + expected, **sp_kwargs)
-        reports.append('pyenv versions updated to %s' % ', '.join(expected))
-
-    basename = os.path.basename(repodir)
-    venv_name = '%s/envs/%s' % (expected[0], basename)
-
-    # get list of available venvs
-    all_venvs = subprocess.run(['pyenv', 'versions', '--bare', '--skip-aliases'], **sp_kwargs).stdout.split()
-
-    # delete any venvs with outdated versions
-    for venv in [v for v in all_venvs if v.endswith(basename)]:
-        if venv != venv_name:
-            reports.append('pyenv: Delete %s' % venv)
-            subprocess.run(['pyenv', 'uninstall', '--force', venv], **sp_kwargs)
-
-    # install new venv if necessary
-    if venv_name not in all_venvs:
-        pyenv_env = dict({k: v for k, v in os.environ.items()
-                          if not k.startswith('PYENV') and k != 'VIRTUAL_ENV'},
-                         PYENV_VERSION=venv_name)
-
-        subprocess.run(['pyenv', 'virtualenv', basename], **sp_kwargs)
-        subprocess.run(['pyenv', 'exec', 'pip', 'install', '-U', 'pip', 'setuptools', 'wheel'],
-                       env=pyenv_env, **sp_kwargs)
-
-        reqs = [('-r', r) for r in local_config['pyenv']['requirements']]
-        if reqs:
-            reqs = [item for sublist in reqs for item in sublist]
-            subprocess.run(['pyenv', 'exec', 'pip', 'install'] + reqs, env=pyenv_env, **sp_kwargs)
-        reports.append('pyenv: Created new venv with Python %s' % expected[0])
 
 
 for repo in config['repos']:
@@ -136,7 +89,7 @@ for repo in config['repos']:
         # pyenv config #
         ################
         if 'pyenv' not in args.skip_modules:
-            check_pyenv(repodir, local_config, reports)
+            check_pyenv(config, repodir, local_config, reports)
 
     # print reports for this repo
     if reports:

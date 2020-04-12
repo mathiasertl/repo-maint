@@ -54,5 +54,26 @@ Possible configuration in `.repo-maint.yaml`:
 travis:
   python:
     # disable "nightly" as a travis version
-    nightly: false
+    #nightly: false
+```
+
+
+### pyenv
+
+Updates `.python-versions` files used by [pyenv](https://github.com/pyenv/pyenv).
+
+Will also automatically create a virtualenv using
+[pyenv-virtualenv](https://github.com/pyenv/pyenv-virtualenv) for the latest version and cleanup virtualenvs
+for older python versions (so if e.g. 3.8.3 is released, a new virtualenv using this version is created and
+the old 3.8.2 virtualenv is automatically removed).
+
+Possible configuration in `.repo-maint.yaml`:
+
+```
+pyenv:
+  # Only list latest n versions
+  #latest_versions: 2
+  
+  # Also add the current in-development Python version
+  #dev: true
 ```
