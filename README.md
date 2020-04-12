@@ -40,8 +40,12 @@ requirements:
   files:
     - some/subdir/custom-file-with-reqs.txt
   # Ignore some packages (case insensitive!)
-  ignore:
-    - Sphinx
+  #ignore:
+  #  - Sphinx
+
+  # You can also ignore whole files
+  #ignore_files:
+  #  - requirements.txt
 ```
 
 ### travis
@@ -71,8 +75,8 @@ Possible configuration in `.repo-maint.yaml`:
 
 ```
 pyenv:
-  # Only list latest n versions
-  #latest_versions: 2
+  # Only have the latest N major Python releases
+  #latest-versions: 2
   
   # Also add the current in-development Python version
   #dev: true

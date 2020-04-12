@@ -19,7 +19,7 @@ import subprocess
 
 def check_pyenv(config, repodir, local_config, reports):
     pyenv_config_path = os.path.join(repodir, '.python-version')
-    if not os.path.exists(pyenv_config_path):
+    if not os.path.exists(pyenv_config_path) or local_config['pyenv'].get('skip', False):
         return
 
     sp_kwargs = {'capture_output': True, 'check': True, 'encoding': 'utf-8'}  # reused a few times
